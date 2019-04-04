@@ -1,7 +1,7 @@
 import os
 import os.path
 import re
-
+ 
 
 class Project:
     def __init__(self, projectFilename: str, projectName: str, projectRootPath: str, subprojects: list, targetFramework: str, rootNamespace: str):
@@ -11,7 +11,7 @@ class Project:
         self.SubProjects = subprojects
         self.TargetFramework = targetFramework
         self.RootNamespace = rootNamespace
-
+ 
 def DisplayProject(subProjects: list, projectName: str, indent: int):
     indentation = " " * (indent * 3)
     displayName = projectName.replace(".csproj", "")
@@ -19,15 +19,14 @@ def DisplayProject(subProjects: list, projectName: str, indent: int):
         output = f"{indentation}<{displayName}/>\n"
     else:
         output = f"{indentation}<{displayName}>\n"
-        for subProject in subProjects:
-            result = DisplayProject(
-                subProject.SubProjects, subProject.ProjectName, indent+1)
+       for subProject in subProjects:
+            result = DisplayProject(subProject.SubProjects, subProject.ProjectName, indent+1)
             output = f"{output}{result}"
         output = f"{output}{indentation}</{displayName}>\n"
     return output
-
+ 
 # find all files recursively under the current folder that ends with *.sln
-solutionFilenames = [os.path.join(dp, f) for dp, dn, filenames in os.walk(".") for f in filenames if f.endswith(".sln")] 
+solutionFilenames = [os.path.join(dp, f) for dp, dn, filenames in os.walk(".") for f in filenames if f.endswith(".sln")]
 projectInSolutions = {}
 for solutionFilename in solutionFilenames:
     f = open(solutionFilename)
@@ -44,7 +43,7 @@ for solutionFilename in solutionFilenames:
                 projectInSolutions[projectFilename] = f"{solutionName}"
         line = f.readline()
     f.close()
-
+ 
 # find all files recursively under the current folder that ends with *.csproj
 projectFilenames = [os.path.join(dp, f) for dp, dn, filenames in os.walk(".") for f in filenames if f.endswith(".csproj")]
 
@@ -68,22 +67,25 @@ for projectFilename in projectFilenames:
           if match:
               currentProject.TargetFramework = match.group(1)
           else:
-              match = re.match(r".*ProjectReference Include=\"(.*)\\(.*?)\"", line, re.IGNORECASE)
+              match = re.match(r".*<TargetFrameworkVersion>(.*?)</TargetFrameworkVersion>", line, re.IGNORECASE)
               if match:
-                  subProjectName = match.group(2)
-                  if subProjectName in projectDictionary:
-                      subProject = projectDictionary[subProjectName]
-                  else:
-                      subProject = Project(
-                          f"{match.group(1)}\\{subProjectName}", subProjectName, os.path.dirname(projectFilename), [], "", "")
-                      projectDictionary[subProjectName] = subProject
-                  if not subProject in currentProject.SubProjects:
-                      currentProject.SubProjects.append(subProject)
+                currentProject.TargetFramework = match.group(1)
+              else:
+                match = re.match(r".*ProjectReference Include=\"(.*)\\(.*?)\"", line, re.IGNORECASE)
+                if match:
+                    subProjectName = match.group(2)
+                    if subProjectName in projectDictionary:
+                        subProject = projectDictionary[subProjectName]
+                    else:
+                        subProject = Project(f"{match.group(1)}\\{subProjectName}", subProjectName, os.path.dirname(projectFilename), [], "", "")
+                        projectDictionary[subProjectName] = subProject
+                    if not subProject in currentProject.SubProjects:
+                        currentProject.SubProjects.append(subProject)
         line = f.readline()
     f.close()
     if not currentProject.ProjectName in projectDictionary:
         projectDictionary[projectName] = currentProject
-
+ 
 # create a readme file for each project
 solutionReadmeContent = {}
 solutionReadmeTOC = {}
@@ -94,12 +96,14 @@ for projectName in projectDictionary:
     print(f"projectName: {projectName}, Filename: {outputFilename}")
     projectHeader = f"Project {projectName}"
     projectBaseInfo = "| | |\n|-|-|\n"\
-    f"|Root namespace|{projectDictionary[projectName].RootNamespace}|\n"\
-    f"|Target framework| {projectDictionary[projectName].TargetFramework}|"
+        f"|Root namespace|{projectDictionary[projectName].RootNamespace}|\n"\
+        f"|Target framework| {projectDictionary[projectName].TargetFramework}|"
     projectRoot = os.path.dirname(projectDictionary[projectName].ProjectFilename)
     csharpFiles = [os.path.join(dp, f) for dp, dn, filenames in os.walk(projectRoot) for f in filenames if f.endswith(".cs")]
     projectCSFilenumber = f"|Number of C# files|{len(csharpFiles)}|"
-    solutionName = projectInSolutions[projectName]
+    solutionName = ""
+    if projectName in projectInSolutions:
+        solutionName = projectInSolutions[projectName]
     projectIncludedIn = f"|Project included in|{solutionName}|"
     projectStructure = DisplayProject(projectDictionary[projectName].SubProjects, projectName, 0)
     projectStructure = f"The following structure shows the project hierachy:\n\n```xml\n{projectStructure}```"
@@ -114,7 +118,7 @@ for projectName in projectDictionary:
         f"{fileFooter}"
     )
     file.close()
-    
+ 
     # Create content for solution readme
     # we use the GitHub standard for anchors in the markdown
     projectContent = f"## {projectHeader}<a name=\"{anchor}\"></a>\n\n"\
@@ -130,7 +134,7 @@ for projectName in projectDictionary:
     else:
         solutionReadmeTOC[solutionName] = f"|Project|Root namespace|Target framework|\n|-|-|-|\n{tocEntry}"
     projectNumber = projectNumber + 1
-
+ 
 # create a readme file for each solution file
 for solutionName in solutionReadmeContent:
     newFilename = solutionName.replace(".sln", "")
