@@ -61,7 +61,7 @@ for projectFilename in projectFilenames:
     f = open(projectFilename)
     line = f.readline()
     while line:
-        match = re.match(r".*<PackageReference Include=\"(.*?)\" Version=\"(.*?)\"", line, re.IGNORECASE)
+        match = re.match(r".*<(?:Package)?Reference Include=\"(.*?)\"?,? Version=\"?(.*?)(?:,|\")", line, re.IGNORECASE)
         if match:
             package = match.group(1)
             version = match.group(2)
@@ -74,24 +74,20 @@ for projectFilename in projectFilenames:
             if match:
                 currentProject.RootNamespace = match.group(1)
             else:
-              match = re.match(r".*<TargetFramework>(.*?)</TargetFramework>", line, re.IGNORECASE)
+              match = re.match(r".*<(?:TargetFramework|TargetFrameworkVersion)>(.*?)</(?:TargetFramework|TargetFrameworkVersion)>", line, re.IGNORECASE)
               if match:
                   currentProject.TargetFramework = match.group(1)
               else:
-                  match = re.match(r".*<TargetFrameworkVersion>(.*?)</TargetFrameworkVersion>", line, re.IGNORECASE)
+                  match = re.match(r".*ProjectReference Include=\"(.*)\\(.*?)\"", line, re.IGNORECASE)
                   if match:
-                    currentProject.TargetFramework = match.group(1)
-                  else:
-                    match = re.match(r".*ProjectReference Include=\"(.*)\\(.*?)\"", line, re.IGNORECASE)
-                    if match:
-                        subProjectName = match.group(2)
-                        if subProjectName in projectDictionary:
-                            subProject = projectDictionary[subProjectName]
-                        else:
-                            subProject = Project(f"{match.group(1)}\\{subProjectName}", subProjectName, os.path.dirname(projectFilename))
-                            projectDictionary[subProjectName] = subProject
-                        if not subProject in currentProject.SubProjects:
-                            currentProject.SubProjects.append(subProject)
+                      subProjectName = match.group(2)
+                      if subProjectName in projectDictionary:
+                          subProject = projectDictionary[subProjectName]
+                      else:
+                          subProject = Project(f"{match.group(1)}\\{subProjectName}", subProjectName, os.path.dirname(projectFilename))
+                          projectDictionary[subProjectName] = subProject
+                      if not subProject in currentProject.SubProjects:
+                          currentProject.SubProjects.append(subProject)
         line = f.readline()
     f.close()
     if not currentProject.ProjectName in projectDictionary:
