@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSolution2012", "TestSolution2012\TestSolution2012.csproj", "{794ABE4D-062E-416D-AB9C-59A86304CF4D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary1", "ClassLibraryX1\ClassLibraryX1.csproj", "{0F7CD4A7-A401-4129-AF79-B29332D59DD4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibraryX1", "ClassLibraryX1\ClassLibraryX1.csproj", "{0F7CD4A7-A401-4129-AF79-B29332D59DD4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsService1", "WindowsService1\WindowsService1.csproj", "{1FB9F746-2379-4502-92EC-80DEF564B3D6}"
 EndProject
@@ -31,6 +31,10 @@ Global
 		{3EE44109-5793-4150-AB5B-2E6B14C5F051}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EE44109-5793-4150-AB5B-2E6B14C5F051}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EE44109-5793-4150-AB5B-2E6B14C5F051}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A393C93-89B1-4692-AFC7-03D1062BA578}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A393C93-89B1-4692-AFC7-03D1062BA578}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A393C93-89B1-4692-AFC7-03D1062BA578}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A393C93-89B1-4692-AFC7-03D1062BA578}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

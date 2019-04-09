@@ -20,13 +20,7 @@ The following structure shows the project hierarchy:
 ```xml
 <TestSolution2012>
    <WindowsService1>
-      <ClassLibrary1>
-         <CoreConsoleApp1>
-            <StandardClassLibrary2>
-               <StandardClassLibrary3/>
-            </StandardClassLibrary2>
-         </CoreConsoleApp1>
-      </ClassLibrary1>
+      <ClassLibraryX1/>
    </WindowsService1>
 </TestSolution2012>
 ```

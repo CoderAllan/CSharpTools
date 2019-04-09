@@ -1,7 +1,6 @@
 import os
 import os.path
 import re
- 
 
 class Project:
     def __init__(self, projectFilename: str, projectName: str, projectRootPath: str):
@@ -13,6 +12,11 @@ class Project:
         self.RootNamespace = ""
         self.Packages = []
         self.PackageDictionary = {}
+
+class Solution:
+    def __init__(self, solutionName: str):
+        self.SolutionName = solutionName
+        self.Packages = []
  
 def DisplayProject(subProjects: list, projectName: str, indent: int):
     indentation = " " * (indent * 3)
@@ -50,7 +54,7 @@ for solutionFilename in solutionFilenames:
 projectFilenames = [os.path.join(dp, f) for dp, dn, filenames in os.walk(".") for f in filenames if f.endswith(".csproj")]
 
 projectDictionary = {}
-packagesUsedInSolution = []
+solutions = {}
 for projectFilename in projectFilenames:
     projectName = os.path.basename(projectFilename)
     if projectName in projectDictionary:
@@ -58,6 +62,11 @@ for projectFilename in projectFilenames:
         currentProject.ProjectFilename = projectFilename
     else:
         currentProject = Project(projectFilename, projectName, "")
+    print(f"projectFilename: {projectName}, projectInSolutions: {projectInSolutions}")
+    if projectName in projectInSolutions:
+        solutionName = projectInSolutions[projectName]
+    else:
+        solutionName = "N/A"
     f = open(projectFilename)
     line = f.readline()
     while line:
@@ -66,8 +75,13 @@ for projectFilename in projectFilenames:
             package = match.group(1)
             version = match.group(2)
             currentProject.Packages.append(f"{package}|{version}")
-            if not package in packagesUsedInSolution:
-                packagesUsedInSolution.append(package)
+            if not solutionName in solutions:
+                newsolution = Solution(solutionName)
+                newsolution.Packages.append(package)
+                solutions[solutionName] = newsolution
+            else:
+                if not package in solutions[solutionName].Packages:
+                    solutions[solutionName].Packages.append(package)
             currentProject.PackageDictionary[package] = version
         else:
             match = re.match(r".*<RootNamespace>(.*?)</RootNamespace>", line, re.IGNORECASE)
@@ -157,34 +171,35 @@ for projectName in projectDictionary:
     projectNumber = projectNumber + 1
 
 # create a readme file for each solution file
-packagesUsedInSolution = sorted(packagesUsedInSolution, key = lambda s: s.lower())
 for solutionName in solutionReadmeContent:
-    packageTableSeperator = "|-"
-    packageTableHeader = "|Project"
-    packageTableBody = ""
-    for package in packagesUsedInSolution:
-        packageTableHeader = f"{packageTableHeader}|{package}"
-        packageTableSeperator = f"{packageTableSeperator}|-"
-    for projectName in projectsInSolution[solutionName]:
-        packages = projectDictionary[projectName].Packages
-        packageTableBody = f"{packageTableBody}|{projectName}"
+    if solutionName != "N/A" and len(solutionName) > 0:
+        packagesUsedInSolution = sorted(solutions[solutionName].Packages, key = lambda s: s.lower())
+        packageTableSeperator = "|-"
+        packageTableHeader = "|Project"
+        packageTableBody = ""
         for package in packagesUsedInSolution:
-            if package in projectDictionary[projectName].PackageDictionary:
-                packageTableBody = f"{packageTableBody}|{projectDictionary[projectName].PackageDictionary[package]}"
-            else:
-                packageTableBody = f"{packageTableBody}|"
-        packageTableBody = f"{packageTableBody}|\n"
-    packageTable = f"{packageTableHeader}|\n{packageTableSeperator}|\n{packageTableBody}|\n\n"
-    newFilename = solutionName.replace(".sln", "")
-    outputFilename = f"ReadMe-SolutionStructure-{newFilename}.md"
-    print(f"Generating ReadMe for solution: {solutionName}, filename: {outputFilename}")
-    file = open(outputFilename, "w")
-    file.write(
-        f"# {solutionName}\n\n"\
-        f"## Projects\n\n{solutionReadmeTOC[solutionName]}\n"\
-        f"## Packages\n\n"\
-        f"{packageTable}"\
-        f"{solutionReadmeContent[solutionName]}"\
-        f"{fileFooter}"
-    )
-    file.close()
+            packageTableHeader = f"{packageTableHeader}|{package}"
+            packageTableSeperator = f"{packageTableSeperator}|-"
+        for projectName in projectsInSolution[solutionName]:
+            packages = projectDictionary[projectName].Packages
+            packageTableBody = f"{packageTableBody}|{projectName}"
+            for package in packagesUsedInSolution:
+                if package in projectDictionary[projectName].PackageDictionary:
+                    packageTableBody = f"{packageTableBody}|{projectDictionary[projectName].PackageDictionary[package]}"
+                else:
+                    packageTableBody = f"{packageTableBody}|"
+            packageTableBody = f"{packageTableBody}|\n"
+        packageTable = f"{packageTableHeader}|\n{packageTableSeperator}|\n{packageTableBody}|\n\n"
+        newFilename = solutionName.replace(".sln", "")
+        outputFilename = f"ReadMe-SolutionStructure-{newFilename}.md"
+        print(f"Generating ReadMe for solution: {solutionName}, filename: {outputFilename}")
+        file = open(outputFilename, "w")
+        file.write(
+            f"# {solutionName}\n\n"\
+            f"## Projects\n\n{solutionReadmeTOC[solutionName]}\n"\
+            f"## Packages\n\n"\
+            f"{packageTable}"\
+            f"{solutionReadmeContent[solutionName]}"\
+            f"{fileFooter}"
+        )
+        file.close()

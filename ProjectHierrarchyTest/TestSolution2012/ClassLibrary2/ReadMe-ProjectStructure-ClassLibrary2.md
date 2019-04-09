@@ -11,6 +11,8 @@
 
 |Package|Version|
 |-|-|
+|EntityFramework.SqlServer|6.0.0.0|
+|EntityFramework|6.0.0.0|
 |RestSharp|106.6.9.0|
 
 ## Project hierarchy
