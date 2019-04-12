@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+<Nodes>
+   <Node Id="TestSolution2012.csproj" Label="TestSolution2012.csproj"/>
+   <Node Id="WindowsService1.csproj" Label="WindowsService1.csproj"/>
+</Nodes>
+<Links>
+   <Link Source="TestSolution2012.csproj" Target="WindowsService1.csproj"/>
+   <Link Source="WindowsService1.csproj" Target="ClassLibraryX1.csproj"/>
+</Links>
+</DirectedGraph>

@@ -18,7 +18,7 @@ class Solution:
         self.SolutionName = solutionName
         self.Packages = []
  
-def DisplayProject(subProjects: list, projectName: str, indent: int):
+def GeneratedProjectHierarchy(subProjects: list, projectName: str, indent: int):
     indentation = " " * (indent * 3)
     displayName = projectName.replace(".csproj", "")
     if (len(subProjects) == 0):
@@ -26,11 +26,37 @@ def DisplayProject(subProjects: list, projectName: str, indent: int):
     else:
         output = f"{indentation}<{displayName}>\n"
         for subProject in subProjects:
-            result = DisplayProject(subProject.SubProjects, subProject.ProjectName, indent+1)
+            result = GeneratedProjectHierarchy(subProject.SubProjects, subProject.ProjectName, indent+1)
             output = f"{output}{result}"
         output = f"{output}{indentation}</{displayName}>\n"
     return output
- 
+
+def GenerateDirectedGraphNodes(projects: list, projectName: str):
+    output = f"   <Node Id=\"{projectName}\" Label=\"{projectName}\"/>\n"
+    for project in projects:
+        output = f"{output}   <Node Id=\"{project.ProjectName}\" Label=\"{project.ProjectName}\"/>\n"
+    return output
+
+def GenerateDirectedGraphLinks(subProjects: list, displayName: str, parentDisplayName: str):
+    if len(parentDisplayName) > 0:
+        output = f"   <Link Source=\"{parentDisplayName}\" Target=\"{displayName}\"/>\n"
+    else:
+        output = ""
+    if (len(subProjects) > 0):
+        for subProject in subProjects:
+            result = GenerateDirectedGraphLinks(subProject.SubProjects, subProject.ProjectName, displayName)
+            output = f"{output}{result}"
+    return output
+
+def GenerateDirectedGraph(projects: list, projectName: str):
+    nodes = GenerateDirectedGraphNodes(projects, projectName)
+    links = GenerateDirectedGraphLinks(projects, projectName, "")
+    output = f"<DirectedGraph xmlns=\"http://schemas.microsoft.com/vs/2009/dgml\">\n"\
+      f"<Nodes>\n{nodes}</Nodes>\n"\
+      f"<Links>\n{links}</Links>\n"\
+      "</DirectedGraph>"
+    return output
+
 # find all files recursively under the current folder that ends with *.sln
 solutionFilenames = [os.path.join(dp, f) for dp, dn, filenames in os.walk(".") for f in filenames if f.endswith(".sln")]
 projectInSolutions = {}
@@ -133,10 +159,11 @@ for projectName in projectDictionary:
     packagesInProject = sorted(projectDictionary[projectName].Packages, key = lambda s: s.lower())
     for package in packagesInProject:
         packagesUsed = f"{packagesUsed}\n|{package}|"
-    projectStructure = DisplayProject(projectDictionary[projectName].SubProjects, projectName, 0)
+    projectStructure = GeneratedProjectHierarchy(projectDictionary[projectName].SubProjects, projectName, 0)
     projectStructure = f"The following structure shows the project hierarchy:\n\n```xml\n{projectStructure}```"
     anchor = projectName.lower().replace(' ', '-')
 
+    # Save the project readme file 
     newFilename = projectName.replace(".csproj", "")
     outputFilename = projectDictionary[projectName].ProjectFilename.replace(projectName, f"ReadMe-ProjectStructure-{newFilename}.md")
     print(f"Generating ReadMe for project:  {projectName}, filename: {outputFilename}")
@@ -151,6 +178,17 @@ for projectName in projectDictionary:
         f"## Project hierarchy\n\n"\
         f"{projectStructure}\n\n"\
         f"{fileFooter}"
+    )
+    file.close()
+
+    # Save the project directed graph 
+    directedGraph = GenerateDirectedGraph(projectDictionary[projectName].SubProjects, projectName)
+    outputFilename = projectDictionary[projectName].ProjectFilename.replace(projectName, f"ReadMe-ProjectStructure-{newFilename}.dgml")
+    print(f"Generating directed graph for project:  {projectName}, filename: {outputFilename}")
+    file = open(outputFilename, "w")
+    file.write(
+        f"<?xml version='1.0' encoding='utf-8'?>\n"\
+        f"{directedGraph}\n"
     )
     file.close()
  

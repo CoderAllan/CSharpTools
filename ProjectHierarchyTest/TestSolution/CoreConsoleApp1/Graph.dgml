@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="a" Label="a" Background="#007ACC" />
+    <Node Id="b" Label="b" />
+    <Node Id="c" Label="c" />
+    <Node Id="d" Label="d" />
+    <Node Id="GroupA" Group="Expanded" Stroke="#FF0000" />
+  </Nodes>
+  <Links>
+    <Link Source="a" Target="b" />
+    <Link Source="a" Target="c" />
+    <Link Source="a" Target="d" />
+    <Link Source="c" Target="d" StrokeDashArray="2,5,2" />
+    <Link Category="Contains" Source="GroupA" Target="c" />
+    <Link Category="Contains" Source="GroupA" Target="d" />
+  </Links>
+</DirectedGraph>

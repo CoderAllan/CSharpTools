@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+<Nodes>
+   <Node Id="ClassLibrary1.csproj" Label="ClassLibrary1.csproj"/>
+   <Node Id="CoreConsoleApp1.csproj" Label="CoreConsoleApp1.csproj"/>
+</Nodes>
+<Links>
+   <Link Source="ClassLibrary1.csproj" Target="CoreConsoleApp1.csproj"/>
+   <Link Source="CoreConsoleApp1.csproj" Target="StandardClassLibrary2.csproj"/>
+   <Link Source="StandardClassLibrary2.csproj" Target="StandardClassLibrary3.csproj"/>
+</Links>
+</DirectedGraph>

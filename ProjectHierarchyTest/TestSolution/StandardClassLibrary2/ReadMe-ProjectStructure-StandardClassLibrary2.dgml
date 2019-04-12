@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+<Nodes>
+   <Node Id="StandardClassLibrary2.csproj" Label="StandardClassLibrary2.csproj"/>
+   <Node Id="StandardClassLibrary3.csproj" Label="StandardClassLibrary3.csproj"/>
+</Nodes>
+<Links>
+   <Link Source="StandardClassLibrary2.csproj" Target="StandardClassLibrary3.csproj"/>
+</Links>
+</DirectedGraph>
