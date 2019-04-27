@@ -3,6 +3,7 @@
 <Nodes>
    <Node Id="TestSolution2012.csproj" Label="TestSolution2012.csproj"/>
    <Node Id="WindowsService1.csproj" Label="WindowsService1.csproj"/>
+   <Node Id="ClassLibraryX1.csproj" Label="ClassLibraryX1.csproj"/>
 </Nodes>
 <Links>
    <Link Source="TestSolution2012.csproj" Target="WindowsService1.csproj"/>

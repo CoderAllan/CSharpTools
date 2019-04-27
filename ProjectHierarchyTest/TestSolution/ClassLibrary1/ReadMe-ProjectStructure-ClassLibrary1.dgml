@@ -3,6 +3,8 @@
 <Nodes>
    <Node Id="ClassLibrary1.csproj" Label="ClassLibrary1.csproj"/>
    <Node Id="CoreConsoleApp1.csproj" Label="CoreConsoleApp1.csproj"/>
+   <Node Id="StandardClassLibrary2.csproj" Label="StandardClassLibrary2.csproj"/>
+   <Node Id="StandardClassLibrary3.csproj" Label="StandardClassLibrary3.csproj"/>
 </Nodes>
 <Links>
    <Link Source="ClassLibrary1.csproj" Target="CoreConsoleApp1.csproj"/>

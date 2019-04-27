@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd"
+         xmlns:y="http://www.yworks.com/xml/graphml">
+    <key for="node" id="d0" yfiles.type="nodegraphics"/>
+  <graph id='G' edgedefault='directed'>
+   <node id="StandardClassLibrary3.csproj">
+     <data key="d0">
+       <y:ShapeNode>
+         <y:Geometry height="30.0" width="176.4"/>
+         <y:NodeLabel visible="true" autoSizePolicy="content">StandardClassLibrary3.csproj</y:NodeLabel>
+       </y:ShapeNode>
+     </data>
+   </node>
+   <node id="CoreConsoleApp1.csproj">
+     <data key="d0">
+       <y:ShapeNode>
+         <y:Geometry height="30.0" width="138.6"/>
+         <y:NodeLabel visible="true" autoSizePolicy="content">CoreConsoleApp1.csproj</y:NodeLabel>
+       </y:ShapeNode>
+     </data>
+   </node>
+   <node id="StandardClassLibrary2.csproj">
+     <data key="d0">
+       <y:ShapeNode>
+         <y:Geometry height="30.0" width="176.4"/>
+         <y:NodeLabel visible="true" autoSizePolicy="content">StandardClassLibrary2.csproj</y:NodeLabel>
+       </y:ShapeNode>
+     </data>
+   </node>
+   <edge directed="true" source="CoreConsoleApp1.csproj" target="StandardClassLibrary2.csproj"/>
+   <edge directed="true" source="StandardClassLibrary2.csproj" target="StandardClassLibrary3.csproj"/>
+  </graph>
+</graphml>

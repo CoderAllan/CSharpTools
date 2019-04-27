@@ -1,6 +1,19 @@
 import os
 import os.path
 import re
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-ph", "--generateprojecthierarchy", help="Generate project hierarchy in xml format for each cs-project file", action="store_true")
+parser.add_argument("-sr", "--generatesolutionreadme", help="Generate solution readme in markdown format for each solution file", action="store_true")
+parser.add_argument("-dg", "--generatedirectedgraph", help="Generate directed graph in dgml format for each cs-project file", action="store_true")
+parser.add_argument("-gm", "--generategraphml", help="Generate directed graph  in GraphML (xml) format for each cs-project file", action="store_true")
+args = parser.parse_args()
+
+generateProjectHierarchy = args.generateprojecthierarchy
+generateSolutionReadme = args.generatesolutionreadme
+generateDirectedGraph = args.generatedirectedgraph
+generateGraphML = args.generategraphml
 
 class Project:
     def __init__(self, projectFilename: str, projectName: str, projectRootPath: str):
@@ -31,30 +44,58 @@ def GeneratedProjectHierarchy(subProjects: list, projectName: str, indent: int):
         output = f"{output}{indentation}</{displayName}>\n"
     return output
 
-def GenerateDirectedGraphNodes(projects: list, projectName: str):
-    output = f"   <Node Id=\"{projectName}\" Label=\"{projectName}\"/>\n"
-    for project in projects:
-        output = f"{output}   <Node Id=\"{project.ProjectName}\" Label=\"{project.ProjectName}\"/>\n"
+def GenerateDirectedGraphNodes(projects: list, projectName: str, includeLabel: bool, tagName: str, idAttr: str):
+    label = ""
+    if includeLabel:
+        label = f" Label=\"{projectName}\""
+    output = f"   <{tagName} {idAttr}=\"{projectName}\"{label}/>\n"
+    if (len(projects) > 0):
+        for subProject in projects:
+            result = GenerateDirectedGraphNodes(subProject.SubProjects, subProject.ProjectName, includeLabel, tagName, idAttr)
+            output = f"{output}{result}"
     return output
 
-def GenerateDirectedGraphLinks(subProjects: list, displayName: str, parentDisplayName: str):
+def GenerateDirectedGraphLinks(subProjects: list, displayName: str, parentDisplayName: str, tagName: str, sourceAttr: str, targetAttr: str):
     if len(parentDisplayName) > 0:
-        output = f"   <Link Source=\"{parentDisplayName}\" Target=\"{displayName}\"/>\n"
+        output = f"   <{tagName} {sourceAttr}=\"{parentDisplayName}\" {targetAttr}=\"{displayName}\"/>\n"
     else:
         output = ""
     if (len(subProjects) > 0):
         for subProject in subProjects:
-            result = GenerateDirectedGraphLinks(subProject.SubProjects, subProject.ProjectName, displayName)
+            result = GenerateDirectedGraphLinks(subProject.SubProjects, subProject.ProjectName, displayName, tagName, sourceAttr, targetAttr)
             output = f"{output}{result}"
     return output
 
 def GenerateDirectedGraph(projects: list, projectName: str):
-    nodes = GenerateDirectedGraphNodes(projects, projectName)
-    links = GenerateDirectedGraphLinks(projects, projectName, "")
+    nodes = GenerateDirectedGraphNodes(projects, projectName, True, "Node", "Id")
+    links = GenerateDirectedGraphLinks(projects, projectName, "", "Link", "Source", "Target")
     output = f"<DirectedGraph xmlns=\"http://schemas.microsoft.com/vs/2009/dgml\">\n"\
       f"<Nodes>\n{nodes}</Nodes>\n"\
       f"<Links>\n{links}</Links>\n"\
       "</DirectedGraph>"
+    return output
+
+def GenerateGraphMLNodes(projects: list, projectName: str):
+    width = len(projectName) * 6.3
+    output = {f"   <node id=\"{projectName}\">\n"\
+             f"     <data key=\"d0\">\n"\
+             f"       <y:ShapeNode>\n"\
+             f"         <y:Geometry height=\"30.0\" width=\"{width}\"/>\n"\
+             f"         <y:NodeLabel visible=\"true\" autoSizePolicy=\"content\">{projectName}</y:NodeLabel>\n"\
+             f"       </y:ShapeNode>\n"\
+             f"     </data>\n"\
+             f"   </node>"}
+    if (len(projects) > 0):
+        for subProject in projects:
+            result = GenerateGraphMLNodes(subProject.SubProjects, subProject.ProjectName)
+            output.update(output, result)
+    return output
+
+def GenerateGraphML(projects: list, projectName: str):
+    nodes = "\n".join(list(GenerateGraphMLNodes(projects, projectName)))
+    links = GenerateDirectedGraphLinks(projects, projectName, "", "edge", "source", "target")
+    output = f"{nodes}\n{links}"
+    output = output.replace("<edge", "<edge directed=\"true\"")
     return output
 
 # find all files recursively under the current folder that ends with *.sln
@@ -88,7 +129,6 @@ for projectFilename in projectFilenames:
         currentProject.ProjectFilename = projectFilename
     else:
         currentProject = Project(projectFilename, projectName, "")
-    print(f"projectFilename: {projectName}, projectInSolutions: {projectInSolutions}")
     if projectName in projectInSolutions:
         solutionName = projectInSolutions[projectName]
     else:
@@ -163,35 +203,56 @@ for projectName in projectDictionary:
     projectStructure = f"The following structure shows the project hierarchy:\n\n```xml\n{projectStructure}```"
     anchor = projectName.lower().replace(' ', '-')
 
-    # Save the project readme file 
     newFilename = projectName.replace(".csproj", "")
-    outputFilename = projectDictionary[projectName].ProjectFilename.replace(projectName, f"ReadMe-ProjectStructure-{newFilename}.md")
-    print(f"Generating ReadMe for project:  {projectName}, filename: {outputFilename}")
-    file = open(outputFilename, "w")
-    file.write(
-        f"# {projectHeader}\n\n"\
-        f"{projectBaseInfo}\n"\
-        f"{projectCSFilenumber}\n"\
-        f"{projectIncludedIn}\n\n"\
-        f"## Packages\n\n"\
-        f"{packagesUsed}\n\n"\
-        f"## Project hierarchy\n\n"\
-        f"{projectStructure}\n\n"\
-        f"{fileFooter}"
-    )
-    file.close()
+    # Save the project readme file 
+    if generateProjectHierarchy:
+        outputFilename = projectDictionary[projectName].ProjectFilename.replace(projectName, f"ReadMe-ProjectStructure-{newFilename}.md")
+        print(f"Generating ReadMe for project:  {projectName}, filename: {outputFilename}")
+        file = open(outputFilename, "w")
+        file.write(
+            f"# {projectHeader}\n\n"\
+            f"{projectBaseInfo}\n"\
+            f"{projectCSFilenumber}\n"\
+            f"{projectIncludedIn}\n\n"\
+            f"## Packages\n\n"\
+            f"{packagesUsed}\n\n"\
+            f"## Project hierarchy\n\n"\
+            f"{projectStructure}\n\n"\
+            f"{fileFooter}"
+        )
+        file.close()
 
     # Save the project directed graph 
-    directedGraph = GenerateDirectedGraph(projectDictionary[projectName].SubProjects, projectName)
-    outputFilename = projectDictionary[projectName].ProjectFilename.replace(projectName, f"ReadMe-ProjectStructure-{newFilename}.dgml")
-    print(f"Generating directed graph for project:  {projectName}, filename: {outputFilename}")
-    file = open(outputFilename, "w")
-    file.write(
-        f"<?xml version='1.0' encoding='utf-8'?>\n"\
-        f"{directedGraph}\n"
-    )
-    file.close()
+    if generateDirectedGraph:
+        directedGraph = GenerateDirectedGraph(projectDictionary[projectName].SubProjects, projectName)
+        outputFilename = projectDictionary[projectName].ProjectFilename.replace(projectName, f"ReadMe-ProjectStructure-{newFilename}.dgml")
+        print(f"Generating directed graph (dgml) for project:  {projectName}, filename: {outputFilename}")
+        file = open(outputFilename, "w")
+        file.write(
+            f"<?xml version='1.0' encoding='utf-8'?>\n"\
+            f"{directedGraph}\n"
+        )
+        file.close()
  
+    if generateGraphML:
+        directedGraph = GenerateGraphML(projectDictionary[projectName].SubProjects, projectName)
+        outputFilename = projectDictionary[projectName].ProjectFilename.replace(projectName, f"ReadMe-ProjectStructure-{newFilename}.graphml")
+        print(f"Generating directed graph (GraphL) for project:  {projectName}, filename: {outputFilename}")
+        file = open(outputFilename, "w")
+        file.write(
+            f"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"\
+            f"<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"\n"\
+            f"         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+            f"         xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd\"\n"
+            f"         xmlns:y=\"http://www.yworks.com/xml/graphml\">\n"\
+            f"    <key for=\"node\" id=\"d0\" yfiles.type=\"nodegraphics\"/>\n"\
+            f"  <graph id='G' edgedefault='directed'>\n"
+            f"{directedGraph}"\
+            f"  </graph>\n"\
+            f"</graphml>\n"
+        )
+        file.close()
+
     # Create content for solution readme
     # we use the GitHub standard for anchors in the markdown
     projectContent = f"## {projectHeader}<a name=\"{anchor}\"></a>\n\n"\
@@ -209,35 +270,36 @@ for projectName in projectDictionary:
     projectNumber = projectNumber + 1
 
 # create a readme file for each solution file
-for solutionName in solutionReadmeContent:
-    if solutionName != "N/A" and len(solutionName) > 0:
-        packagesUsedInSolution = sorted(solutions[solutionName].Packages, key = lambda s: s.lower())
-        packageTableSeperator = "|-"
-        packageTableHeader = "|Project"
-        packageTableBody = ""
-        for package in packagesUsedInSolution:
-            packageTableHeader = f"{packageTableHeader}|{package}"
-            packageTableSeperator = f"{packageTableSeperator}|-"
-        for projectName in projectsInSolution[solutionName]:
-            packages = projectDictionary[projectName].Packages
-            packageTableBody = f"{packageTableBody}|{projectName}"
+if generateSolutionReadme:
+    for solutionName in solutionReadmeContent:
+        if solutionName != "N/A" and len(solutionName) > 0:
+            packagesUsedInSolution = sorted(solutions[solutionName].Packages, key = lambda s: s.lower())
+            packageTableSeperator = "|-"
+            packageTableHeader = "|Project"
+            packageTableBody = ""
             for package in packagesUsedInSolution:
-                if package in projectDictionary[projectName].PackageDictionary:
-                    packageTableBody = f"{packageTableBody}|{projectDictionary[projectName].PackageDictionary[package]}"
-                else:
-                    packageTableBody = f"{packageTableBody}|"
-            packageTableBody = f"{packageTableBody}|\n"
-        packageTable = f"{packageTableHeader}|\n{packageTableSeperator}|\n{packageTableBody}|\n\n"
-        newFilename = solutionName.replace(".sln", "")
-        outputFilename = f"ReadMe-SolutionStructure-{newFilename}.md"
-        print(f"Generating ReadMe for solution: {solutionName}, filename: {outputFilename}")
-        file = open(outputFilename, "w")
-        file.write(
-            f"# {solutionName}\n\n"\
-            f"## Projects\n\n{solutionReadmeTOC[solutionName]}\n"\
-            f"## Packages\n\n"\
-            f"{packageTable}"\
-            f"{solutionReadmeContent[solutionName]}"\
-            f"{fileFooter}"
-        )
-        file.close()
+                packageTableHeader = f"{packageTableHeader}|{package}"
+                packageTableSeperator = f"{packageTableSeperator}|-"
+            for projectName in projectsInSolution[solutionName]:
+                packages = projectDictionary[projectName].Packages
+                packageTableBody = f"{packageTableBody}|{projectName}"
+                for package in packagesUsedInSolution:
+                    if package in projectDictionary[projectName].PackageDictionary:
+                        packageTableBody = f"{packageTableBody}|{projectDictionary[projectName].PackageDictionary[package]}"
+                    else:
+                        packageTableBody = f"{packageTableBody}|"
+                packageTableBody = f"{packageTableBody}|\n"
+            packageTable = f"{packageTableHeader}|\n{packageTableSeperator}|\n{packageTableBody}|\n\n"
+            newFilename = solutionName.replace(".sln", "")
+            outputFilename = f"ReadMe-SolutionStructure-{newFilename}.md"
+            print(f"Generating ReadMe for solution: {solutionName}, filename: {outputFilename}")
+            file = open(outputFilename, "w")
+            file.write(
+                f"# {solutionName}\n\n"\
+                f"## Projects\n\n{solutionReadmeTOC[solutionName]}\n"\
+                f"## Packages\n\n"\
+                f"{packageTable}"\
+                f"{solutionReadmeContent[solutionName]}"\
+                f"{fileFooter}"
+            )
+            file.close()

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd"
+         xmlns:y="http://www.yworks.com/xml/graphml">
+    <key for="node" id="d0" yfiles.type="nodegraphics"/>
+  <graph id='G' edgedefault='directed'>
+   <node id="UnitTestProject1.csproj">
+     <data key="d0">
+       <y:ShapeNode>
+         <y:Geometry height="30.0" width="144.9"/>
+         <y:NodeLabel visible="true" autoSizePolicy="content">UnitTestProject1.csproj</y:NodeLabel>
+       </y:ShapeNode>
+     </data>
+   </node>
+  </graph>
+</graphml>
