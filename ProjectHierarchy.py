@@ -2,6 +2,7 @@ import os
 import os.path
 import re
 import argparse
+import igraph as ig
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-ph", "--generateprojecthierarchy", help="Generate project hierarchy in xml format for each cs-project file", action="store_true")
@@ -14,6 +15,8 @@ generateProjectHierarchy = args.generateprojecthierarchy
 generateSolutionReadme = args.generatesolutionreadme
 generateDirectedGraph = args.generatedirectedgraph
 generateGraphML = args.generategraphml
+generateSVG = False
+generatePNG = False
 
 class Project:
     def __init__(self, projectFilename: str, projectName: str, projectRootPath: str):
@@ -30,7 +33,12 @@ class Solution:
     def __init__(self, solutionName: str):
         self.SolutionName = solutionName
         self.Packages = []
- 
+
+class Link:
+    def __init__(self, source: str, target: str):
+        self.Source = source
+        self.Target = target
+
 def GeneratedProjectHierarchy(subProjects: list, projectName: str, indent: int):
     indentation = " " * (indent * 3)
     displayName = projectName.replace(".csproj", "")
@@ -97,6 +105,45 @@ def GenerateGraphML(projects: list, projectName: str):
     output = f"{nodes}\n{links}"
     output = output.replace("<edge", "<edge directed=\"true\"")
     return output
+
+def GenerateIGraphLinks(subProjects: list, displayName: str, parentDisplayName: str):
+    if len(parentDisplayName) > 0:
+        #newLink = Link(parentDisplayName, displayName)
+        output = {(parentDisplayName, displayName)}
+    else:
+        output = set()
+    if (len(subProjects) > 0):
+        for subProject in subProjects:
+            result = GenerateIGraphLinks(subProject.SubProjects, subProject.ProjectName, displayName)
+            output.update(output, result) 
+    return output
+
+def GenerateIGraphNodes(projects: list, projectName: str):
+    output = {projectName}
+    if (len(projects) > 0):
+        for subProject in projects:
+            result = GenerateIGraphNodes(subProject.SubProjects, subProject.ProjectName)
+            output.update(output, result)
+    return output
+#https://www.youtube.com/watch?v=SpDI6-FvtJY
+def GeneratePngOrSvg(projects: list, projectName: str, projectPath:str):
+    nodes = list(GenerateIGraphNodes(projects, projectName))
+    links = list(GenerateIGraphLinks(projects, projectName, ""))
+    g = ig.Graph(directed=True)
+    g.add_vertices(nodes)
+    g.add_edges(links)
+    g.vs["name"] = nodes
+    g.vs["label"] = g.vs["name"]
+    layout = g.layout_sugiyama()
+    visual_style = {}
+    visual_style["layout"] = layout
+    print(f"{projectPath}\\{projectName}.png")
+    if generatePNG:
+        #ig.plot(g, f"{projectName}\\{projectName}.png", margin=(120, 20, 120, 20), **visual_style)
+        ig.plot(g, f"{projectName}.png", margin=(120, 20, 120, 20), **visual_style)
+    if generateSVG:
+        #g.write_svg(f"{projectName}\\{projectName}.svg", layout)
+        g.write_svg(f"{projectName}.svg", layout)
 
 # find all files recursively under the current folder that ends with *.sln
 solutionFilenames = [os.path.join(dp, f) for dp, dn, filenames in os.walk(".") for f in filenames if f.endswith(".sln")]
@@ -181,8 +228,12 @@ solutionReadmeTOC = {}
 projectNumber = 1
 for projectName in projectDictionary:
     projectHeader = f"Project {projectName}"
+    if projectDictionary[projectName].RootNamespace:
+        rootNameSpace = projectDictionary[projectName].RootNamespace
+    else:
+        rootNameSpace = os.path.splitext(projectName)[0]
     projectBaseInfo = "| | |\n|-|-|\n"\
-        f"|Root namespace|{projectDictionary[projectName].RootNamespace}|\n"\
+        f"|Root namespace|{rootNameSpace}|\n"\
         f"|Target framework| {projectDictionary[projectName].TargetFramework}|"
     projectRoot = os.path.dirname(projectDictionary[projectName].ProjectFilename)
     csharpFiles = [os.path.join(dp, f) for dp, dn, filenames in os.walk(projectRoot) for f in filenames if f.endswith(".cs")]
@@ -253,6 +304,9 @@ for projectName in projectDictionary:
         )
         file.close()
 
+    if generatePNG or generateSVG:
+        GeneratePngOrSvg(projectDictionary[projectName].SubProjects, projectName, projectDictionary[projectName].ProjectRootPath)
+    
     # Create content for solution readme
     # we use the GitHub standard for anchors in the markdown
     projectContent = f"## {projectHeader}<a name=\"{anchor}\"></a>\n\n"\
@@ -261,8 +315,13 @@ for projectName in projectDictionary:
     if solutionName in solutionReadmeContent:
         solutionReadmeContent[solutionName] = solutionReadmeContent[solutionName] + projectContent
     else:
-      solutionReadmeContent[solutionName] = projectContent
-    tocEntry = f"|[{projectName}](#{anchor})|{projectDictionary[projectName].RootNamespace}|{projectDictionary[projectName].TargetFramework}|\n"
+        solutionReadmeContent[solutionName] = projectContent
+    if projectDictionary[projectName].RootNamespace:
+        rootNameSpace = projectDictionary[projectName].RootNamespace
+    else:
+        rootNameSpace = os.path.splitext(projectName)[0]
+
+    tocEntry = f"|[{projectName}](#{anchor})|{rootNameSpace}|{projectDictionary[projectName].TargetFramework}|\n"
     if solutionName in solutionReadmeTOC:
         solutionReadmeTOC[solutionName] = solutionReadmeTOC[solutionName] + tocEntry
     else:
