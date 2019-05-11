@@ -1,22 +1,46 @@
+# Required package: pyDot
+# Install using pip: pip install pydot
+# 
+# pyDot requires GraphViz to render PNG and SVG files: 
+# Download: https://graphviz.gitlab.io/_pages/Download/Download_windows.html
+# Remember to add the GraphViz bin folder to the PATH environment variable:
+# C:\Program Files (x86)\Graphviz2.38\bin
+
 import os
 import os.path
 import re
 import argparse
-import igraph as ig
+import pydot
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-ph", "--generateprojecthierarchy", help="Generate project hierarchy in xml format for each cs-project file", action="store_true")
-parser.add_argument("-sr", "--generatesolutionreadme", help="Generate solution readme in markdown format for each solution file", action="store_true")
-parser.add_argument("-dg", "--generatedirectedgraph", help="Generate directed graph in dgml format for each cs-project file", action="store_true")
-parser.add_argument("-gm", "--generategraphml", help="Generate directed graph  in GraphML (xml) format for each cs-project file", action="store_true")
+parser = argparse.ArgumentParser("Tool for visualizing the project hierarchy for a C# solution.")
+parser.add_argument("-ph", "--generateprojecthierarchy", default=False, help="Generate project hierarchy in xml format for each cs-project file", action="store_true")
+parser.add_argument("-sr", "--generatesolutionreadme", default=True, help="Generate solution readme in markdown format for each solution file", action="store_true")
+parser.add_argument("-dg", "--generatedirectedgraph", default=False, help="Generate directed graph in dgml format for each cs-project file", action="store_true")
+parser.add_argument("-gm", "--generategraphml", default=False, help="Generate directed graph  in GraphML (xml) format for each cs-project file", action="store_true")
+parser.add_argument("-img", "--generateimage", default=False, help="Generate directed graph in PNG format for each cs-project file. The format can be changed by the -f parameter", action="store_true")
+parser.add_argument("-f", "--pydotformat", default="png", help="Specifies the image output format. Valid formats: dia, dot, gd, gif, jpg, pdf, png, ps, svg, vml", type=str)
 args = parser.parse_args()
 
 generateProjectHierarchy = args.generateprojecthierarchy
 generateSolutionReadme = args.generatesolutionreadme
 generateDirectedGraph = args.generatedirectedgraph
 generateGraphML = args.generategraphml
-generateSVG = False
-generatePNG = False
+generateImg = args.generateimage
+pyDotOutputFormat = args.pydotformat
+
+pyDotFormats = [
+            'canon', 'cmap', 'cmapx',
+            'cmapx_np', 'dia', 'dot',
+            'fig', 'gd', 'gd2', 'gif',
+            'hpgl', 'imap', 'imap_np', 'ismap',
+            'jpe', 'jpeg', 'jpg', 'mif',
+            'mp', 'pcl', 'pdf', 'pic', 'plain',
+            'plain-ext', 'png', 'ps', 'ps2',
+            'svg', 'svgz', 'vml', 'vmlz',
+            'vrml', 'vtx', 'wbmp', 'xdot', 'xlib']
+if not pyDotOutputFormat in pyDotFormats:
+    print(f"Illegal argument specified for parameter --pydotformat (-f): {pyDotOutputFormat}")
+    exit()
 
 class Project:
     def __init__(self, projectFilename: str, projectName: str, projectRootPath: str):
@@ -106,44 +130,26 @@ def GenerateGraphML(projects: list, projectName: str):
     output = output.replace("<edge", "<edge directed=\"true\"")
     return output
 
-def GenerateIGraphLinks(subProjects: list, displayName: str, parentDisplayName: str):
+def GeneratePyDotLinks(subProjects: list, displayName: str, parentDisplayName: str):
     if len(parentDisplayName) > 0:
-        #newLink = Link(parentDisplayName, displayName)
         output = {(parentDisplayName, displayName)}
     else:
         output = set()
     if (len(subProjects) > 0):
         for subProject in subProjects:
-            result = GenerateIGraphLinks(subProject.SubProjects, subProject.ProjectName, displayName)
+            result = GeneratePyDotLinks(subProject.SubProjects, subProject.ProjectName, displayName)
             output.update(output, result) 
     return output
 
-def GenerateIGraphNodes(projects: list, projectName: str):
-    output = {projectName}
-    if (len(projects) > 0):
-        for subProject in projects:
-            result = GenerateIGraphNodes(subProject.SubProjects, subProject.ProjectName)
-            output.update(output, result)
-    return output
-#https://www.youtube.com/watch?v=SpDI6-FvtJY
-def GeneratePngOrSvg(projects: list, projectName: str, projectPath:str):
-    nodes = list(GenerateIGraphNodes(projects, projectName))
-    links = list(GenerateIGraphLinks(projects, projectName, ""))
-    g = ig.Graph(directed=True)
-    g.add_vertices(nodes)
-    g.add_edges(links)
-    g.vs["name"] = nodes
-    g.vs["label"] = g.vs["name"]
-    layout = g.layout_sugiyama()
-    visual_style = {}
-    visual_style["layout"] = layout
-    print(f"{projectPath}\\{projectName}.png")
-    if generatePNG:
-        #ig.plot(g, f"{projectName}\\{projectName}.png", margin=(120, 20, 120, 20), **visual_style)
-        ig.plot(g, f"{projectName}.png", margin=(120, 20, 120, 20), **visual_style)
-    if generateSVG:
-        #g.write_svg(f"{projectName}\\{projectName}.svg", layout)
-        g.write_svg(f"{projectName}.svg", layout)
+def GenerateImage(projects: list, projectName: str, projectPath:str):
+    links = list(GeneratePyDotLinks(projects, projectName, ""))
+    if len(links) > 0:
+        graph = pydot.Dot(graph_type='digraph')
+        for link in links:
+            edge = pydot.Edge(link[0], link[1])
+            graph.add_edge(edge)
+        if generateImg:
+            graph.write(f"{projectName}.{pyDotOutputFormat}", format=pyDotOutputFormat)
 
 # find all files recursively under the current folder that ends with *.sln
 solutionFilenames = [os.path.join(dp, f) for dp, dn, filenames in os.walk(".") for f in filenames if f.endswith(".sln")]
@@ -304,8 +310,8 @@ for projectName in projectDictionary:
         )
         file.close()
 
-    if generatePNG or generateSVG:
-        GeneratePngOrSvg(projectDictionary[projectName].SubProjects, projectName, projectDictionary[projectName].ProjectRootPath)
+    if generateImg:
+        GenerateImage(projectDictionary[projectName].SubProjects, projectName, projectDictionary[projectName].ProjectRootPath)
     
     # Create content for solution readme
     # we use the GitHub standard for anchors in the markdown
