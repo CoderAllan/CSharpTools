@@ -10,7 +10,23 @@ import os
 import os.path
 import re
 import argparse
+from importlib import util
+
+# Verify that pydot package is installed
+pydot_loader = util.find_spec('pydot')
+if pydot_loader is None:
+    print("Fatal error!")
+    print("Required package 'pydot' not found. Please install pydot using 'pip install pydot'")
+    exit()
 import pydot
+
+# Verify thet Graphviz is installed
+path = os.environ.get('PATH', '')
+graphVizNotFound = re.search("graphviz", path, re.IGNORECASE) is None
+if graphVizNotFound:
+    print("Fatal error!")
+    print("Required program not found. Please download and install Graphviz from: https://graphviz.gitlab.io/_pages/Download/Download_windows.html ")
+    exit()
 
 parser = argparse.ArgumentParser("Tool for visualizing the project hierarchy for a C# solution.")
 parser.add_argument("-ph", "--generateprojecthierarchy", default=False, help="Generate project hierarchy in xml format for each cs-project file", action="store_true")
