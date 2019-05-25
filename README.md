@@ -1,4 +1,4 @@
-# CSharpTools
+# CSharpTools ![GitHub top language](https://img.shields.io/github/languages/top/CoderAllan/CSharpTools.svg) ![GitHub](https://img.shields.io/github/license/CoderAllan/CSharpTools.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/CoderAllan/CSharpTools.svg)
 
 Collection of tools used when developing C# code
 
