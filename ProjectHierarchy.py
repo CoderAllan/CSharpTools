@@ -176,7 +176,7 @@ for solutionFilename in solutionFilenames:
     line = f.readline() # skip first line that contains BOM info
     line = f.readline()
     while line:
-        match = re.match(r".*\".*?\\(.*?\.csproj)\"", line, re.IGNORECASE)
+        match = re.match(r".*\".*\\(.*?\.csproj)\"", line, re.IGNORECASE)
         if match:
             projectFilename = match.group(1)
             if projectFilename in projectInSolutions:
