@@ -28,7 +28,7 @@ if graphVizNotFound:
     print("Required program not found. Please download and install Graphviz from: https://graphviz.gitlab.io/_pages/Download/Download_windows.html ")
     exit()
 
-parser = argparse.ArgumentParser("Tool for visualizing the project hierarchy for a C# solution.")
+parser = argparse.ArgumentParser("python ProjectHierarchy.py", description="Tool for visualizing the project hierarchy for a C# solution.")
 parser.add_argument("-ph", "--generateprojecthierarchy", default=False, help="Generate project hierarchy in xml format for each cs-project file", action="store_true")
 parser.add_argument("-sr", "--generatesolutionreadme", default=True, help="Generate solution readme in markdown format for each solution file", action="store_true")
 parser.add_argument("-dg", "--generatedirectedgraph", default=False, help="Generate directed graph in dgml format for each cs-project file", action="store_true")
