@@ -4,11 +4,11 @@
 
 |Project|Root namespace|Target framework|
 |-|-|-|
-|[CoreConsoleApp1.csproj](#coreconsoleapp1.csproj)||netcoreapp2.2|
+|[CoreConsoleApp1.csproj](#coreconsoleapp1.csproj)|CoreConsoleApp1|netcoreapp2.2|
 |[ClassLibrary1.csproj](#classlibrary1.csproj)|ClassLibrary1.Test|v4.7.2|
 |[StandardClassLibrary2.csproj](#standardclasslibrary2.csproj)|StandardClassLibrary2.Test1|netstandard2.0|
-|[StandardClassLibrary3.csproj](#standardclasslibrary3.csproj)||netstandard2.0|
-|[UnitTestProject1.csproj](#unittestproject1.csproj)||netcoreapp2.2|
+|[StandardClassLibrary3.csproj](#standardclasslibrary3.csproj)|StandardClassLibrary3|netstandard2.0|
+|[UnitTestProject1.csproj](#unittestproject1.csproj)|UnitTestProject1|netcoreapp2.2|
 
 ## Packages
 
@@ -25,7 +25,7 @@
 
 | | |
 |-|-|
-|Root namespace||
+|Root namespace|CoreConsoleApp1|
 |Target framework| netcoreapp2.2|
 
 The following structure shows the project hierarchy:
@@ -76,7 +76,7 @@ The following structure shows the project hierarchy:
 
 | | |
 |-|-|
-|Root namespace||
+|Root namespace|StandardClassLibrary3|
 |Target framework| netstandard2.0|
 
 The following structure shows the project hierarchy:
@@ -89,7 +89,7 @@ The following structure shows the project hierarchy:
 
 | | |
 |-|-|
-|Root namespace||
+|Root namespace|UnitTestProject1|
 |Target framework| netcoreapp2.2|
 
 The following structure shows the project hierarchy:

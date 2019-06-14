@@ -2,9 +2,9 @@
 
 | | |
 |-|-|
-|Root namespace||
+|Root namespace|UnitTestProject1|
 |Target framework| netcoreapp2.2|
-|Number of C# files|5|
+|Number of C# files|1|
 |Project included in|TestSolution.sln|
 
 ## Packages

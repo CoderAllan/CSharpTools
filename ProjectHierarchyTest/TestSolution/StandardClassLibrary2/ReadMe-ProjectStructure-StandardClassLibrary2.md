@@ -4,7 +4,7 @@
 |-|-|
 |Root namespace|StandardClassLibrary2.Test1|
 |Target framework| netstandard2.0|
-|Number of C# files|2|
+|Number of C# files|1|
 |Project included in|TestSolution.sln|
 
 ## Packages

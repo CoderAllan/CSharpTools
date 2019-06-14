@@ -4,7 +4,7 @@
 |-|-|
 |Root namespace|TestSolution2012|
 |Target framework| v4.5|
-|Number of C# files|5|
+|Number of C# files|2|
 |Project included in|TestSolution2012.sln|
 
 ## Packages

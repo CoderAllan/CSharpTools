@@ -4,7 +4,7 @@
 |-|-|
 |Root namespace|WindowsService1|
 |Target framework| v4.5|
-|Number of C# files|7|
+|Number of C# files|4|
 |Project included in|TestSolution2012.sln|
 
 ## Packages

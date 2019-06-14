@@ -4,7 +4,7 @@
 |-|-|
 |Root namespace|ClassLibrary1.Test|
 |Target framework| v4.7.2|
-|Number of C# files|5|
+|Number of C# files|2|
 |Project included in|TestSolution2012.sln|
 
 ## Packages
