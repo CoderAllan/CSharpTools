@@ -1,7 +1,7 @@
 # Required package: pyDot
 # Install using pip: pip install pydot
-# 
-# pyDot requires GraphViz to render PNG and SVG files: 
+#
+# pyDot requires GraphViz to render PNG and SVG files:
 # Download: https://graphviz.gitlab.io/_pages/Download/Download_windows.html
 # Remember to add the GraphViz bin folder to the PATH environment variable:
 # C:\Program Files (x86)\Graphviz2.38\bin
@@ -45,16 +45,16 @@ generateImg = args.generateimage
 pyDotOutputFormat = args.pydotformat
 
 pyDotFormats = [
-            'canon', 'cmap', 'cmapx',
-            'cmapx_np', 'dia', 'dot',
-            'fig', 'gd', 'gd2', 'gif',
-            'hpgl', 'imap', 'imap_np', 'ismap',
-            'jpe', 'jpeg', 'jpg', 'mif',
-            'mp', 'pcl', 'pdf', 'pic', 'plain',
-            'plain-ext', 'png', 'ps', 'ps2',
-            'svg', 'svgz', 'vml', 'vmlz',
-            'vrml', 'vtx', 'wbmp', 'xdot', 'xlib']
-if not pyDotOutputFormat in pyDotFormats:
+    'canon', 'cmap', 'cmapx',
+    'cmapx_np', 'dia', 'dot',
+    'fig', 'gd', 'gd2', 'gif',
+    'hpgl', 'imap', 'imap_np', 'ismap',
+    'jpe', 'jpeg', 'jpg', 'mif',
+    'mp', 'pcl', 'pdf', 'pic', 'plain',
+    'plain-ext', 'png', 'ps', 'ps2',
+    'svg', 'svgz', 'vml', 'vmlz',
+    'vrml', 'vtx', 'wbmp', 'xdot', 'xlib']
+if pyDotOutputFormat not in pyDotFormats:
     print(f"Illegal argument specified for parameter --pydotformat (-f): {pyDotOutputFormat}")
     exit()
 
@@ -87,7 +87,7 @@ def GeneratedProjectHierarchy(subProjects: list, projectName: str, indent: int):
     else:
         output = f"{indentation}<{displayName}>\n"
         for subProject in subProjects:
-            result = GeneratedProjectHierarchy(subProject.SubProjects, subProject.ProjectName, indent+1)
+            result = GeneratedProjectHierarchy(subProject.SubProjects, subProject.ProjectName, indent + 1)
             output = f"{output}{result}"
         output = f"{output}{indentation}</{displayName}>\n"
     return output
@@ -118,21 +118,21 @@ def GenerateDirectedGraph(projects: list, projectName: str):
     nodes = GenerateDirectedGraphNodes(projects, projectName, True, "Node", "Id")
     links = GenerateDirectedGraphLinks(projects, projectName, "", "Link", "Source", "Target")
     output = f"<DirectedGraph xmlns=\"http://schemas.microsoft.com/vs/2009/dgml\">\n"\
-      f"<Nodes>\n{nodes}</Nodes>\n"\
-      f"<Links>\n{links}</Links>\n"\
-      "</DirectedGraph>"
+        f"<Nodes>\n{nodes}</Nodes>\n"\
+        f"<Links>\n{links}</Links>\n"\
+        "</DirectedGraph>"
     return output
 
 def GenerateGraphMLNodes(projects: list, projectName: str):
     width = len(projectName) * 6.3
-    output = {f"   <node id=\"{projectName}\">\n"\
-             f"     <data key=\"d0\">\n"\
-             f"       <y:ShapeNode>\n"\
-             f"         <y:Geometry height=\"30.0\" width=\"{width}\"/>\n"\
-             f"         <y:NodeLabel visible=\"true\" autoSizePolicy=\"content\">{projectName}</y:NodeLabel>\n"\
-             f"       </y:ShapeNode>\n"\
-             f"     </data>\n"\
-             f"   </node>"}
+    output = {f"   <node id=\"{projectName}\">\n"
+              f"     <data key=\"d0\">\n"
+              f"       <y:ShapeNode>\n"
+              f"         <y:Geometry height=\"30.0\" width=\"{width}\"/>\n"
+              f"         <y:NodeLabel visible=\"true\" autoSizePolicy=\"content\">{projectName}</y:NodeLabel>\n"
+              f"       </y:ShapeNode>\n"
+              f"     </data>\n"
+              f"   </node>"}
     if (len(projects) > 0):
         for subProject in projects:
             result = GenerateGraphMLNodes(subProject.SubProjects, subProject.ProjectName)
@@ -154,10 +154,10 @@ def GeneratePyDotLinks(subProjects: list, displayName: str, parentDisplayName: s
     if (len(subProjects) > 0):
         for subProject in subProjects:
             result = GeneratePyDotLinks(subProject.SubProjects, subProject.ProjectName, displayName)
-            output.update(output, result) 
+            output.update(output, result)
     return output
 
-def GenerateImage(projects: list, projectName: str, projectPath:str):
+def GenerateImage(projects: list, projectName: str):
     links = list(GeneratePyDotLinks(projects, projectName, ""))
     if len(links) > 0:
         graph = pydot.Dot(graph_type='digraph')
@@ -173,7 +173,7 @@ projectInSolutions = {}
 for solutionFilename in solutionFilenames:
     f = open(solutionFilename)
     solutionName = os.path.basename(solutionFilename)
-    line = f.readline() # skip first line that contains BOM info
+    line = f.readline()  # skip first line that contains BOM info
     line = f.readline()
     while line:
         match = re.match(r".*\".*\\(.*?\.csproj)\"", line, re.IGNORECASE)
@@ -210,12 +210,12 @@ for projectFilename in projectFilenames:
             package = match.group(1)
             version = match.group(2)
             currentProject.Packages.append(f"{package}|{version}")
-            if not solutionName in solutions:
+            if solutionName not in solutions:
                 newsolution = Solution(solutionName)
                 newsolution.Packages.append(package)
                 solutions[solutionName] = newsolution
             else:
-                if not package in solutions[solutionName].Packages:
+                if package not in solutions[solutionName].Packages:
                     solutions[solutionName].Packages.append(package)
             currentProject.PackageDictionary[package] = version
         else:
@@ -223,27 +223,27 @@ for projectFilename in projectFilenames:
             if match:
                 currentProject.RootNamespace = match.group(1)
             else:
-              match = re.match(r".*<(?:TargetFramework|TargetFrameworkVersion)>(.*?)</(?:TargetFramework|TargetFrameworkVersion)>", line, re.IGNORECASE)
-              if match:
-                  currentProject.TargetFramework = match.group(1)
-              else:
-                  match = re.match(r".*ProjectReference Include=\"(.*)\\(.*?)\"", line, re.IGNORECASE)
-                  if match:
-                      subProjectName = match.group(2)
-                      if subProjectName in projectDictionary:
-                          subProject = projectDictionary[subProjectName]
-                      else:
-                          subProject = Project(f"{match.group(1)}\\{subProjectName}", subProjectName, os.path.dirname(projectFilename))
-                          projectDictionary[subProjectName] = subProject
-                      if not subProject in currentProject.SubProjects:
-                          currentProject.SubProjects.append(subProject)
+                match = re.match(r".*<(?:TargetFramework|TargetFrameworkVersion)>(.*?)</(?:TargetFramework|TargetFrameworkVersion)>", line, re.IGNORECASE)
+                if match:
+                    currentProject.TargetFramework = match.group(1)
+                else:
+                    match = re.match(r".*ProjectReference Include=\"(.*)\\(.*?)\"", line, re.IGNORECASE)
+                    if match:
+                        subProjectName = match.group(2)
+                        if subProjectName in projectDictionary:
+                            subProject = projectDictionary[subProjectName]
+                        else:
+                            subProject = Project(f"{match.group(1)}\\{subProjectName}", subProjectName, os.path.dirname(projectFilename))
+                            projectDictionary[subProjectName] = subProject
+                        if subProject not in currentProject.SubProjects:
+                            currentProject.SubProjects.append(subProject)
         line = f.readline()
     f.close()
-    if not currentProject.ProjectName in projectDictionary:
+    if currentProject.ProjectName not in projectDictionary:
         projectDictionary[projectName] = currentProject
 
 # create a readme file for each project
-fileFooter = f"This file was autogenerated by the tool: [https://github.com/CoderAllan/CSharpTools/blob/master/ProjectHierarchy.py](https://github.com/CoderAllan/CSharpTools/blob/master/ProjectHierarchy.py)"
+fileFooter = "This file was autogenerated by the tool: [https://github.com/CoderAllan/CSharpTools/blob/master/ProjectHierarchy.py](https://github.com/CoderAllan/CSharpTools/blob/master/ProjectHierarchy.py)"
 projectsInSolution = {}
 solutionReadmeContent = {}
 solutionReadmeTOC = {}
@@ -269,7 +269,7 @@ for projectName in projectDictionary:
     else:
         projectsInSolution[solutionName] = [projectName,]
     packagesUsed = "|Package|Version|\n|-|-|"
-    packagesInProject = sorted(projectDictionary[projectName].Packages, key = lambda s: s.lower())
+    packagesInProject = sorted(projectDictionary[projectName].Packages, key=lambda s: s.lower())
     for package in packagesInProject:
         packagesUsed = f"{packagesUsed}\n|{package}|"
     projectStructure = GeneratedProjectHierarchy(projectDictionary[projectName].SubProjects, projectName, 0)
@@ -277,58 +277,58 @@ for projectName in projectDictionary:
     anchor = projectName.lower().replace(' ', '-')
 
     newFilename = projectName.replace(".csproj", "")
-    # Save the project readme file 
+    # Save the project readme file
     if generateProjectHierarchy:
         outputFilename = projectDictionary[projectName].ProjectFilename.replace(projectName, f"ReadMe-ProjectStructure-{newFilename}.md")
         print(f"Generating ReadMe for project:  {projectName}, filename: {outputFilename}")
         file = open(outputFilename, "w")
         file.write(
-            f"# {projectHeader}\n\n"\
-            f"{projectBaseInfo}\n"\
-            f"{projectCSFilenumber}\n"\
-            f"{projectIncludedIn}\n\n"\
-            f"## Packages\n\n"\
-            f"{packagesUsed}\n\n"\
-            f"## Project hierarchy\n\n"\
-            f"{projectStructure}\n\n"\
+            f"# {projectHeader}\n\n"
+            f"{projectBaseInfo}\n"
+            f"{projectCSFilenumber}\n"
+            f"{projectIncludedIn}\n\n"
+            f"## Packages\n\n"
+            f"{packagesUsed}\n\n"
+            f"## Project hierarchy\n\n"
+            f"{projectStructure}\n\n"
             f"{fileFooter}"
         )
         file.close()
 
-    # Save the project directed graph 
+    # Save the project directed graph
     if generateDirectedGraph:
         directedGraph = GenerateDirectedGraph(projectDictionary[projectName].SubProjects, projectName)
         outputFilename = projectDictionary[projectName].ProjectFilename.replace(projectName, f"ReadMe-ProjectStructure-{newFilename}.dgml")
         print(f"Generating directed graph (dgml) for project:  {projectName}, filename: {outputFilename}")
         file = open(outputFilename, "w")
         file.write(
-            f"<?xml version='1.0' encoding='utf-8'?>\n"\
+            f"<?xml version='1.0' encoding='utf-8'?>\n"
             f"{directedGraph}\n"
         )
         file.close()
- 
+
     if generateGraphML:
         directedGraph = GenerateGraphML(projectDictionary[projectName].SubProjects, projectName)
         outputFilename = projectDictionary[projectName].ProjectFilename.replace(projectName, f"ReadMe-ProjectStructure-{newFilename}.graphml")
         print(f"Generating directed graph (GraphL) for project:  {projectName}, filename: {outputFilename}")
         file = open(outputFilename, "w")
         file.write(
-            f"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"\
-            f"<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"\n"\
+            f"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            f"<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"\n"
             f"         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
             f"         xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd\"\n"
-            f"         xmlns:y=\"http://www.yworks.com/xml/graphml\">\n"\
-            f"    <key for=\"node\" id=\"d0\" yfiles.type=\"nodegraphics\"/>\n"\
+            f"         xmlns:y=\"http://www.yworks.com/xml/graphml\">\n"
+            f"    <key for=\"node\" id=\"d0\" yfiles.type=\"nodegraphics\"/>\n"
             f"  <graph id='G' edgedefault='directed'>\n"
-            f"{directedGraph}"\
-            f"  </graph>\n"\
+            f"{directedGraph}"
+            f"  </graph>\n"
             f"</graphml>\n"
         )
         file.close()
 
     if generateImg:
-        GenerateImage(projectDictionary[projectName].SubProjects, projectName, projectDictionary[projectName].ProjectRootPath)
-    
+        GenerateImage(projectDictionary[projectName].SubProjects, projectName)
+
     # Create content for solution readme
     # we use the GitHub standard for anchors in the markdown
     projectContent = f"## {projectHeader}<a name=\"{anchor}\"></a>\n\n"\
@@ -354,7 +354,7 @@ for projectName in projectDictionary:
 if generateSolutionReadme:
     for solutionName in solutionReadmeContent:
         if solutionName != "N/A" and len(solutionName) > 0:
-            packagesUsedInSolution = sorted(solutions[solutionName].Packages, key = lambda s: s.lower())
+            packagesUsedInSolution = sorted(solutions[solutionName].Packages, key=lambda s: s.lower())
             packageTableSeperator = "|-"
             packageTableHeader = "|Project"
             packageTableBody = ""
@@ -376,11 +376,11 @@ if generateSolutionReadme:
             print(f"Generating ReadMe for solution: {solutionName}, filename: {outputFilename}")
             file = open(outputFilename, "w")
             file.write(
-                f"# {solutionName}\n\n"\
-                f"## Projects\n\n{solutionReadmeTOC[solutionName]}\n"\
-                f"## Packages\n\n"\
-                f"{packageTable}"\
-                f"{solutionReadmeContent[solutionName]}"\
+                f"# {solutionName}\n\n"
+                f"## Projects\n\n{solutionReadmeTOC[solutionName]}\n"
+                f"## Packages\n\n"
+                f"{packageTable}"
+                f"{solutionReadmeContent[solutionName]}"
                 f"{fileFooter}"
             )
             file.close()
