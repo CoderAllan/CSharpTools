@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AutoMapper, Version=16.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005">
-      <HintPath>..\packages\AutoMapper.16.1.1\lib\net471\AutoMapper.dll</HintPath>
+      <HintPath>..\packages\AutoMapper.16.3.0\lib\net471\AutoMapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
